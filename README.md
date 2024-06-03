@@ -23,11 +23,6 @@ Create contact with enum for link precedence (primary and secondary)
 
 ### CASE I - The web service should return an HTTP 200 response with a JSON payload containing the consolidated contact for
 
-{
-"email"?: string,
-"phoneNumber"?: number
-}
-
 ### CASE II - no existing contacts against an incoming request? Create a new contact
 
 ### CASE III - If an incoming request has either of phoneNumber or email common to an existing contact but contains new information, the service will create a “secondary” Contact row.

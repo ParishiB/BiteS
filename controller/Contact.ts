@@ -1,35 +1,7 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { createContactSchema, identifySchema } from "../utils/zod";
-
 const prisma = new PrismaClient();
-
-export const createContact = async (req: Request, res: Response) => {
-  try {
-    const result = createContactSchema.safeParse(req.body);
-    if (!result.success) {
-      return res.status(400).json(result.error.errors);
-    }
-    const { phoneNumber, email, linkedId, linkPrecedence } = result.data;
-
-    const newContact = await prisma.contact.create({
-      data: {
-        phoneNumber: phoneNumber || null,
-        email: email || null,
-        linkedId: linkedId || null,
-        linkPrecedence: "primary",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        deletedAt: null,
-      },
-    });
-
-    res.status(201).json(newContact);
-  } catch (error) {
-    console.error("Could not create the contact", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
 
 export const identify = async (req: Request, res: Response) => {
   try {
@@ -53,12 +25,11 @@ export const identify = async (req: Request, res: Response) => {
       });
       return res.status(400).json({
         message:
-          "new contact is createed since email and phoneNUmber is not provided",
+          "new contact is created since email and phoneNumber are not provided",
       });
     }
 
     // Case II
-
     const contacts = await prisma.contact.findMany({
       where: {
         OR: [
@@ -67,6 +38,41 @@ export const identify = async (req: Request, res: Response) => {
         ],
       },
     });
+
+    // Case III
+
+    const primaryContact = contacts[0];
+    const primaryContactId = primaryContact.id;
+    let emails: any = [];
+    let phoneNumbers: any = [];
+    let secondaryContactIds: any = [];
+
+    for (let i = 1; i < contacts.length; i++) {
+      await prisma.contact.update({
+        where: {
+          id: contacts[i].id,
+        },
+        data: {
+          linkedId: primaryContactId,
+          linkPrecedence: "secondary",
+          updatedAt: new Date(),
+        },
+      });
+      emails.push(contacts[i].email);
+      phoneNumbers.push(contacts[i].phoneNumber);
+      secondaryContactIds.push(contacts[i].id);
+    }
+
+    if (emails.length > 1 || phoneNumbers.length > 1) {
+      return res.status(200).json({
+        contact: {
+          primaryContactId: primaryContactId,
+          emails: emails,
+          phoneNumbers: phoneNumbers,
+          secondaryContactIds: secondaryContactIds,
+        },
+      });
+    }
 
     if (contacts.length === 0) {
       const newContact = await prisma.contact.create({
@@ -84,27 +90,8 @@ export const identify = async (req: Request, res: Response) => {
         .json({ message: "New contact created", contact: newContact });
     }
 
-    // Case III
-
-    const primaryContact = contacts[0];
-    const primaryContactId = primaryContact.id;
-
-    for (let i = 1; i < contacts.length; i++) {
-      await prisma.contact.update({
-        where: {
-          id: contacts[i].id,
-        },
-        data: {
-          linkedId: primaryContactId,
-          linkPrecedence: "secondary",
-          updatedAt: new Date(),
-        },
-      });
-    }
-
-    return res.status(200).json({ message: "Case 2 satisfied" });
-
     // Case IV
+
     let firstContactWithEmail = await prisma.contact.findFirst({
       where: {
         email: email,

@@ -13,7 +13,6 @@ app.use(rateLimiter);
 app.use(bodyParser.json());
 app.use(pinoHttp({ logger }));
 
-app.use("/", require("./routes/Contact"));
 app.post("/identify", identify);
 
 const PORT = 4000;

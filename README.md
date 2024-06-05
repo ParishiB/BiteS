@@ -12,19 +12,26 @@ However, given Doc's modus operandi, Bitespeed faces a unique challenge: linking
 different contact information to the same person.
 
 # Approach for various cases
+Meet the brilliant yet eccentric Dr. Emmett Brown, better known as Doc. Hopelessly stuck in 2023, he is fixing his
+time machine to go back to the future and save his friend. His favourite online store FluxKart.com sells all the
+parts required to build this contraption. As crazy as he might get at times, Doc surely knows how to be careful. To
+avoid drawing attention to his grandiose project, Doc is using different email addresses and phone numbers for
+each purchase.
 
-## post/createContact/v1/
+FluxKart.com is deadpan serious about their customer experience. There is nothing more important than
+rewarding their loyal customers a#nd giving a personalised experience. To do this, FluxKart decides to integrate
+Bitespeed into their platform. Bitespeed collects contact details from shoppers for a personalised customer
+experience.
+However, given Doc's modus operandi, Bitespeed faces a unique challenge: linking different orders made with
+different contact information to the same person.
 
-Create contact with enum for link precedence (primary and secondary)
+# Approach for various cases
 
-## post/identify/v1/
+## CASE - I If none of the the phonenumber or email is not present in db, so a new row will be created
 
-## Test cases
+## CASE II if either of the phone number or email is present so we create a new row and send thee response iwth all the primarycontactt
 
-### CASE I - The web service should return an HTTP 200 response with a JSON payload containing the consolidated contact for
+## CASE III if we want to change the primary contact to secondary contact
 
-### CASE II - no existing contacts against an incoming request? Create a new contact
+## CASE IV both the email and phoneNumber are present in the same row
 
-### CASE III - If an incoming request has either of phoneNumber or email common to an existing contact but contains new information, the service will create a “secondary” Contact row.
-
-### CASE IV - Primary contacts turn into secondary
